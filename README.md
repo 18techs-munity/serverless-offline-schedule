@@ -40,3 +40,19 @@ Serverless: Scheduling [schedule-function] cron: [*/1 * * * *] input: {"schedule
 ...
 Serverless: Succesfully invoked scheduled function: [my-function]
 ```
+
+#### Adding options in serverless.yml
+
+Options can be supplied in the serverless yml file under custom.serverlessOfflineSchedule. The following options are supported:
+
+```
+custom:
+  serverlessOfflineSchedule:
+    # an array of strings representing any functions you wish to not run via schedule
+    skipFunctions:
+      - function1
+      - function2
+    # If set to true, any not-skipped scheduled functions will be executed immediately as well
+    # as having their cron schedule initiated.
+    runImmediately: true
+```

@@ -15,6 +15,7 @@
     "lint": "concurrently \"npm run prettier\" \"npm run eslint\"",
     "prettier": "prettier -l 'src/**/*'",
     "eslint": "eslint --max-warnings 0 --ext .ts 'src/**/*'",
+    "eslint:fix": "eslint --max-warnings 0 --ext .ts 'src/**/*' --fix",
     "dev:schedule": "ts-node scripts/schedule.ts"
   },
   "keywords": [

@@ -1,4 +1,5 @@
 import schedule from 'node-schedule';
+import * as utils from '../src/utils';
 
 import Scheduler from '../src/scheduler';
 
@@ -34,6 +35,10 @@ describe('OfflineScheduler', () => {
       functionProvider: () => {
         return {};
       },
+      configOptions: {
+        skipFunctions: [],
+        runImmediately: false,
+      },
     });
 
     scheduler.scheduleEvents();
@@ -53,6 +58,10 @@ describe('OfflineScheduler', () => {
           },
         };
       },
+      configOptions: {
+        skipFunctions: [],
+        runImmediately: false,
+      },
     });
 
     scheduler.scheduleEvents();
@@ -65,12 +74,55 @@ describe('OfflineScheduler', () => {
     const scheduler = new Scheduler({
       log,
       functionProvider: () => scheduleFunction,
+      configOptions: {
+        skipFunctions: [],
+        runImmediately: false,
+      },
     });
 
     scheduler.scheduleEvents();
     expect(log).toBeCalledWith(
       'Scheduling [schedule-function] cron: [*/1 * * * *] input: {"scheduler":"1-minute"}'
     );
+    expect(scheduleJob).toBeCalledTimes(1);
+  });
+
+  it('Should respect the "skipFunctions" option', () => {
+    const log = jest.fn();
+    const scheduleJob = jest.spyOn(schedule, 'scheduleJob');
+    const scheduler = new Scheduler({
+      log,
+      functionProvider: () => scheduleFunction,
+      configOptions: {
+        skipFunctions: ['schedule-function'],
+        runImmediately: false,
+      },
+    });
+
+    scheduler.scheduleEvents();
+    expect(scheduleJob).toBeCalledTimes(0);
+  });
+
+  it('Should run the function immediately when "runImmediately" option is set', () => {
+    const log = jest.fn();
+    const scheduleJob = jest.spyOn(schedule, 'scheduleJob');
+    const slsRunSpy = jest
+      .spyOn(utils, 'slsInvokeFunction')
+      .mockImplementation(() => Buffer.from('abc'));
+    const scheduler = new Scheduler({
+      log,
+      functionProvider: () => scheduleFunction,
+      configOptions: {
+        skipFunctions: [],
+        runImmediately: true,
+      },
+    });
+
+    scheduler.scheduleEvents();
+    expect(log).toBeCalledWith(
+      'Scheduling [schedule-function] cron: [*/1 * * * *] input: {"scheduler":"1-minute"}'
+    );
+    expect(slsRunSpy).toBeCalledTimes(1);
     expect(scheduleJob).toBeCalledTimes(1);
   });
 
@@ -84,6 +136,10 @@ describe('OfflineScheduler', () => {
     const scheduler = new Scheduler({
       log,
       functionProvider: () => scheduleFunction,
+      configOptions: {
+        skipFunctions: [],
+        runImmediately: false,
+      },
     });
 
     scheduler.scheduleEvents();
@@ -99,6 +155,10 @@ describe('OfflineScheduler', () => {
     const scheduler = new Scheduler({
       log,
       functionProvider: () => scheduleFunction,
+      configOptions: {
+        skipFunctions: [],
+        runImmediately: false,
+      },
     });
 
     scheduler.scheduleEventsStandalone();

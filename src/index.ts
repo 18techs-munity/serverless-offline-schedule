@@ -10,7 +10,6 @@ export class ServelessOfflineSchedulerPlugin {
   public constructor(serverless: Serverless.Instance, options: Serverless.Options) {
     this.serverless = serverless;
     this.options = options;
-
     this.commands = {
       schedule: {
         usage: 'Run scheduled lambdas locally',
@@ -21,6 +20,7 @@ export class ServelessOfflineSchedulerPlugin {
     const offlineScheduler = new OfflineScheduler({
       log: message => serverless.cli.log(message),
       functionProvider: () => this.serverless.service.functions,
+      configOptions: this.serverless.service.custom?.serverlessOfflineSchedule,
     });
 
     this.hooks = {

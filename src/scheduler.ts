@@ -10,6 +10,7 @@ type FunctionProvider = () => {
 type SchedulerConfig = {
   log?: (message: string) => void;
   functionProvider: FunctionProvider;
+  configOptions: Serverless.ScheduleConfigOptions;
 };
 
 type FunctionConfiguration = {
@@ -21,11 +22,13 @@ type FunctionConfiguration = {
 class OfflineScheduler {
   private log: (message: string) => void;
   private functionProvider: FunctionProvider;
+  private configOptions: Serverless.ScheduleConfigOptions;
 
   public constructor(config: SchedulerConfig) {
-    const { log = console.log, functionProvider } = config;
+    const { log = console.log, functionProvider, configOptions } = config;
     this.log = log;
     this.functionProvider = functionProvider;
+    this.configOptions = configOptions;
   }
 
   public scheduleEventsStandalone = () => {
@@ -38,9 +41,19 @@ class OfflineScheduler {
 
     configurations.forEach(functionConfiguration => {
       const { functionName, cron, input } = functionConfiguration;
+
+      if ((this.configOptions.skipFunctions || []).includes(functionName)) {
+        this.log(`Skipping scheduled function [${functionName}]`);
+        return;
+      }
+
       this.log(`Scheduling [${functionName}] cron: [${cron}] input: ${JSON.stringify(input)}`);
 
       cron.forEach(c => {
+        if (this.configOptions.runImmediately) {
+          this.log(`Running scheduled function immediately [${functionName}]`);
+          slsInvokeFunction(functionName, input);
+        }
         schedule.scheduleJob(c, () => {
           try {
             slsInvokeFunction(functionName, input);
@@ -68,7 +81,7 @@ class OfflineScheduler {
         }
         return {
           functionName,
-          cron: (<string[]>rate).map(r => convertExpressionToCron(r)),
+          cron: (rate as string[]).map(r => convertExpressionToCron(r)),
           input: event['schedule'].input || {},
         };
       });

@@ -6,6 +6,11 @@ declare namespace Serverless {
 
   type Commands = { [key: string]: Command };
 
+  interface ScheduleConfigOptions {
+    skipFunctions: string[];
+    runImmediately: boolean;
+  }
+
   interface Instance {
     cli: {
       log(str: string): void;
@@ -23,6 +28,9 @@ declare namespace Serverless {
         [key: string]: Serverless.Function;
       };
       package: Serverless.Package;
+      custom: {
+        serverlessOfflineSchedule: ScheduleConfigOptions;
+      };
       getAllFunctions(): string[];
     };
 
